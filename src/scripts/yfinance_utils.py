@@ -13,6 +13,7 @@ VISUALISE = True
 TICKERS = [
     "XLC", "XLY", "XLP", "XLE", "XLF", "XLV", "XLI", "XLK", "XLB", "XLRE", "XLU", "GLD", "USO", "SPY"
 ]
+TAU = 0.002
 
 #Returns close prices for tickers in date range
 def get_adj_close():
@@ -89,6 +90,50 @@ def get_returns():
 
     return returns
 
+def label_returns():
+    #read returns file into dataframe
+    returns = pd.read_csv(
+        f"{OUTPUT_PATH}returns_daily.csv",
+        parse_dates=["date"]
+    ).set_index("date")
 
+    #create labels dataframe
+    labels = returns.copy()
+
+    #when data point is above tau, assign 1 label
+    #when data point is above tau or below -tau, assign 0 label
+    #when data point is below -tau, assign -1 label
+    labels[returns > TAU] = 1
+    labels[(returns >= -TAU) & (returns <= TAU)] = 0
+    labels[returns < -TAU] = -1
+
+    if DEBUG:
+        print(labels)
+
+    if SAVE_TO_FILE:
+        labels.to_csv(f"{OUTPUT_PATH}labelled_returns.csv", index_label="date")
+
+    if VISUALISE:
+        #count the labels of each kind and plot a bar chart
+        label_counts = labels.stack().value_counts().sort_index()
+        label_counts.plot(kind="bar")
+
+        plt.title("Distribution of Daily Return Labels")
+        plt.xlabel("Label")
+        plt.ylabel("Count")
+
+        plt.xticks(
+            ticks=[0, 1, 2],
+            labels=["Down (-1)", "Neutral (0)", "Up (1)"],
+            rotation=0
+        )
+
+        plt.tight_layout()
+        plt.show()
+
+    return labels
+
+#RUN FUNCTIONS
 get_adj_close()
 get_returns()
+label_returns()
