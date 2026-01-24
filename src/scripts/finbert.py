@@ -1,6 +1,9 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import torch.nn.functional as F
+import sys
+sys.path.append('../')
+
 
 DEBUG = False
 MODEL_NAME = "ProsusAI/finbert"
