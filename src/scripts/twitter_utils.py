@@ -88,6 +88,12 @@ def process_tweets():
         month_df = month_df.drop_duplicates(subset=["text"], keep="first")
         month_df.to_csv(f"{OUT_PATH}{i}_cleaned.csv", index = False)
 
+        #---preprocessing done, now scoring---
+
+        month_df["finbert_score"] = month_df["text"].apply(finbert.score_text)
+        month_df.to_csv(f"{OUT_PATH}{i}_cleaned_scored.csv", index = False)
+
         i += 1
+
 
 process_tweets()

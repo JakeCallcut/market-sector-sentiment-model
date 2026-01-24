@@ -12,6 +12,12 @@ his repository contains the code for an academic dissertation project investigat
 
 ## Installation & Usage
 
+1. Navigate to project root
+2. Install dependencies using:
+   
+   `pip install -r requirements.txt`
+
+
 ## Legal & Licensing
 
 
