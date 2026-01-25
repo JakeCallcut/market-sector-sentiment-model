@@ -86,14 +86,22 @@ def process_tweets():
 
         #dedupe and write to csv
         month_df = month_df.drop_duplicates(subset=["text"], keep="first")
-        month_df.to_csv(f"{OUT_PATH}{i}_cleaned.csv", index = False)
 
-        #---preprocessing done, now scoring---
-
+        #use finbert model on all text and store in new file
         month_df["finbert_score"] = month_df["text"].apply(finbert.score_text)
         month_df.to_csv(f"{OUT_PATH}{i}_cleaned_scored.csv", index = False)
 
+        #group and aggregate into days, taking the average sentiment score, and total tweet count
+        score_df = month_df[['market_date', 'finbert_score']].copy()
+        score_df = (score_df.groupby('market_date', as_index=False).agg(mean_sentiment=("finbert_score", "mean"), tweet_count=("finbert_score", "size"),)).sort_values("market_date")
+
+        #save to new csvs
+        score_df.to_csv(f"{OUT_PATH}/agg_scores/{i}_agg_scores.csv", index = False)
+
+
+        
         i += 1
+
 
 
 process_tweets()
