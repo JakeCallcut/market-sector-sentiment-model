@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 #CONFIG VARIABLES
 START_DATE = "2020-01-01"
 END_DATE = "2021-01-01"
-OUTPUT_PATH = "../../data/market/raw/"
+RAW_PATH = "../../data/market/raw/"
+PROCESSED_PATH = "../../data/market/processed/"
 DEBUG = True
 SAVE_TO_FILE = True
 VISUALISE = True
@@ -37,7 +38,7 @@ def get_adj_close():
         print(closes)
 
     if SAVE_TO_FILE:
-        closes.to_csv(f"{OUTPUT_PATH}closes_daily.csv", index_label="date")
+        closes.to_csv(f"{RAW_PATH}closes_daily.csv", index_label="date")
         print("saved closes")
 
     if VISUALISE:
@@ -60,7 +61,7 @@ def get_returns():
 
     #read closes file
     closes = pd.read_csv(
-        f"{OUTPUT_PATH}closes_daily.csv",
+        f"{RAW_PATH}closes_daily.csv",
         parse_dates=["date"]
     ).set_index("date")
 
@@ -72,7 +73,7 @@ def get_returns():
         print(returns)
     
     if SAVE_TO_FILE:
-        returns.to_csv(f"{OUTPUT_PATH}returns_daily.csv", index_label="date")
+        returns.to_csv(f"{RAW_PATH}returns_daily.csv", index_label="date")
         print("saved returns")
 
     if VISUALISE:
@@ -93,7 +94,7 @@ def get_returns():
 def label_returns():
     #read returns file into dataframe
     returns = pd.read_csv(
-        f"{OUTPUT_PATH}returns_daily.csv",
+        f"{RAW_PATH}returns_daily.csv",
         parse_dates=["date"]
     ).set_index("date")
 
@@ -111,7 +112,7 @@ def label_returns():
         print(labels)
 
     if SAVE_TO_FILE:
-        labels.to_csv(f"{OUTPUT_PATH}labelled_returns.csv", index_label="date")
+        labels.to_csv(f"{PROCESSED_PATH}labelled_returns.csv", index_label="date")
 
     if VISUALISE:
         #count the labels of each kind and plot a bar chart
