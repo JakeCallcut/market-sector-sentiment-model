@@ -38,7 +38,6 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled  = scaler.transform(X_test)
 
 model = LogisticRegression(
-    multi_class="multinomial",
     solver="lbfgs",
     max_iter=1000,
     class_weight="balanced"
@@ -53,3 +52,5 @@ print(f"Model accuracy:    {accuracy:.3f}")
 print(f"Baseline accuracy: {baseline:.3f}")
 print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
 print("Classification Report:\n", classification_report(y_test, y_pred, labels=[-1, 0, 1]))
+
+print(y_test.value_counts())
