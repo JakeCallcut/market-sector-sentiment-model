@@ -2,11 +2,14 @@ import pandas as pd
 import re
 import datetime
 import finbert
+import os
 
 #config vars
 DEBUG = True
 IN_PATH = "../../data/twitter/raw/"
 OUT_PATH = "../../data/twitter/processed/"
+FINAL_OUT = "../../data/twitter/processed/agg_scores/all_agg_scores.csv"
+
 
 #US Eastern Market open and close times
 market_open = pd.to_datetime("09:30:00").time()
@@ -34,6 +37,9 @@ def clean_tweet(tweet: str):
     output = WHITESPACE_RE.sub(" ", output)
     output = output.strip()
     return output
+
+if os.path.exists(FINAL_OUT):
+    os.remove(FINAL_OUT)
 
 #function to process and sentiment score all tweets, processing includes cleaning, adjusting market days, removing fields, and de-duping 
 def process_tweets():
@@ -95,13 +101,36 @@ def process_tweets():
         score_df = month_df[['market_date', 'finbert_score']].copy()
         score_df = (score_df.groupby('market_date', as_index=False).agg(mean_sentiment=("finbert_score", "mean"), tweet_count=("finbert_score", "size"),)).sort_values("market_date")
 
-        #save to new csvs
-        score_df.to_csv(f"{OUT_PATH}/agg_scores/{i}_agg_scores.csv", index = False)
+        #save to individual csv
+        score_df.to_csv(f"{OUT_PATH}agg_scores/{i}_agg_scores.csv", index = False)
 
+        #append to large year table
+        score_df.to_csv(
+            FINAL_OUT,
+            mode="a",
+            index=False,
+            header = not os.path.exists(FINAL_OUT)
+        )
 
-        
         i += 1
 
-
-
+#process all months
 process_tweets()
+
+#read large year table
+final_df = pd.read_csv(FINAL_OUT)
+
+#force into date time and drop errors
+final_df["market_date"] = pd.to_datetime(final_df["market_date"], errors="coerce")
+final_df = final_df[final_df["market_date"].notna()].copy()
+
+#aggregate and group again
+final_df = (final_df.groupby("market_date", as_index = False)).agg(mean_sentiment=("mean_sentiment", "mean"),tweet_count=("tweet_count", "sum"),)
+
+#sort values chronologically
+final_df = final_df.sort_values("market_date")
+
+final_df["market_date"] = final_df["market_date"].apply(lambda x: x.strftime('%Y-%m-%d'))
+
+#save again
+final_df.to_csv(FINAL_OUT, index=False)

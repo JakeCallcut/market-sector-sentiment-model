@@ -112,7 +112,8 @@ def label_returns():
         print(labels)
 
     if SAVE_TO_FILE:
-        labels.to_csv(f"{PROCESSED_PATH}labelled_returns.csv", index_label="date")
+        labels.rename(columns={"date": "market_date"})
+        labels.to_csv(f"{PROCESSED_PATH}labelled_returns.csv", index_label="market_date")
 
     if VISUALISE:
         #count the labels of each kind and plot a bar chart
