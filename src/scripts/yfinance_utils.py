@@ -3,13 +3,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #CONFIG VARIABLES
-START_DATE = "2020-01-01"
-END_DATE = "2021-01-01"
-RAW_PATH = "../../data/market/raw/"
-PROCESSED_PATH = "../../data/market/processed/"
+START_DATE = "2019-01-01"
+END_DATE = "2019-12-31"
+PROCESSED_PATH = "../../data/processed/processed_returns.csv"
 DEBUG = True
 SAVE_TO_FILE = True
-VISUALISE = True
 
 TICKERS = [
     "XLC", "XLY", "XLP", "XLE", "XLF", "XLV", "XLI", "XLK", "XLB", "XLRE", "XLU", "GLD", "USO", "SPY"
@@ -38,21 +36,8 @@ def get_adj_close():
         print(closes)
 
     if SAVE_TO_FILE:
-        closes.to_csv(f"{RAW_PATH}closes_daily.csv", index_label="date")
+        closes.to_csv(PROCESSED_PATH, index_label="date")
         print("saved closes")
-
-    if VISUALISE:
-        #plot a lightweight graph of prices
-        sample_cols = closes.columns[:3]  # just benchmark, gold, and oil
-        closes[sample_cols].plot(figsize=(8, 4), linewidth=1)
-
-        plt.title("Daily Adjusted Close (Sample)")
-        plt.xlabel("Date")
-        plt.ylabel("Adjusted Close")
-        plt.axhline(0, linewidth=0.8)
-
-        plt.tight_layout()
-        plt.show()
 
     return closes
 
@@ -61,7 +46,7 @@ def get_returns():
 
     #read closes file
     closes = pd.read_csv(
-        f"{RAW_PATH}closes_daily.csv",
+        PROCESSED_PATH,
         parse_dates=["date"]
     ).set_index("date")
 
@@ -73,28 +58,15 @@ def get_returns():
         print(returns)
     
     if SAVE_TO_FILE:
-        returns.to_csv(f"{RAW_PATH}returns_daily.csv", index_label="date")
+        returns.to_csv(PROCESSED_PATH, index_label="date")
         print("saved returns")
-
-    if VISUALISE:
-        #plot a lightweight graph of returns
-        sample_cols = returns.columns[:3]  # just benchmark, gold, and oil
-        returns[sample_cols].plot(figsize=(8, 4), linewidth=1)
-
-        plt.title("Daily Returns (Sample)")
-        plt.xlabel("Date")
-        plt.ylabel("Return")
-        plt.axhline(0, linewidth=0.8)
-
-        plt.tight_layout()
-        plt.show()
 
     return returns
 
 def label_returns():
     #read returns file into dataframe
     returns = pd.read_csv(
-        f"{RAW_PATH}returns_daily.csv",
+        PROCESSED_PATH,
         parse_dates=["date"]
     ).set_index("date")
 
@@ -112,26 +84,7 @@ def label_returns():
         print(labels)
 
     if SAVE_TO_FILE:
-        labels.rename(columns={"date": "market_date"})
-        labels.to_csv(f"{PROCESSED_PATH}labelled_returns.csv", index_label="market_date")
-
-    if VISUALISE:
-        #count the labels of each kind and plot a bar chart
-        label_counts = labels.stack().value_counts().sort_index()
-        label_counts.plot(kind="bar")
-
-        plt.title("Distribution of Daily Return Labels")
-        plt.xlabel("Label")
-        plt.ylabel("Count")
-
-        plt.xticks(
-            ticks=[0, 1, 2],
-            labels=["Down (-1)", "Neutral (0)", "Up (1)"],
-            rotation=0
-        )
-
-        plt.tight_layout()
-        plt.show()
+        labels.to_csv(PROCESSED_PATH, index_label="date")
 
     return labels
 
