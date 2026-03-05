@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 from sklearn.model_selection import TimeSeriesSplit
 
@@ -11,11 +11,19 @@ from helpers import make_lags, LABEL_MAP, FEATURE_COLS, MODEL_TABLE_PATH
 
 
 # config vars
-EVAL_PATH = "../../data/results/mn_logreg_evaluation.csv"
+EVAL_PATH = "../../data/results/rf_evaluation.csv"
 
-#simple helper to get model instance
-def get_logistic(**kwargs):
-	return LogisticRegression(**kwargs)
+
+def get_random_forest(**kwargs):
+	"""Helper to get Random Forest model instance with sensible defaults."""
+	defaults = {
+		"n_estimators": 100,
+		"class_weight": "balanced",
+		"random_state": 42,
+	}
+	defaults.update(kwargs)
+	return RandomForestClassifier(**defaults)
+
 
 def train_and_evaluate(df, ticker, n_splits=5):
 
@@ -43,7 +51,7 @@ def train_and_evaluate(df, ticker, n_splits=5):
 		X_train, X_test = X[train_idx], X[test_idx]
 		y_train, y_test = y[train_idx], y[test_idx]
 
-		pipeline = make_pipeline(StandardScaler(), get_logistic(solver="lbfgs", class_weight="balanced", max_iter=1000))
+		pipeline = make_pipeline(StandardScaler(), get_random_forest())
 		pipeline.fit(X_train, y_train)
 
 		y_pred = pipeline.predict(X_test)
@@ -62,8 +70,8 @@ def train_and_evaluate(df, ticker, n_splits=5):
 	overall_f1 = float(np.mean(f1s))
 	cm = confusion_matrix(y_true_all, y_pred_all, labels=[0, 1, 2])
 
-	# retrain on full data and save model
-	final_pipeline = make_pipeline(StandardScaler(), get_logistic(solver="lbfgs", class_weight="balanced", max_iter=1000))
+	# retrain on full data
+	final_pipeline = make_pipeline(StandardScaler(), get_random_forest())
 	final_pipeline.fit(X, y)
 
 	#build result map storing accuracy, f1 and confusion matrix for plotting later
