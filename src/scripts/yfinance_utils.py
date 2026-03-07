@@ -3,8 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #CONFIG VARIABLES
-START_DATE = "2019-01-01"
-END_DATE = "2019-12-31"
+START_DATE = "2020-04-09"
+END_DATE = "2020-07-16"
 PROCESSED_PATH = "../../data/processed/processed_returns.csv"
 DEBUG = True
 SAVE_TO_FILE = True

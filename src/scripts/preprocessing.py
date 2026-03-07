@@ -9,14 +9,13 @@ tweet_df = pd.read_csv("../../data/processed/clean_tweets.csv")
 returns_df = pd.read_csv("../../data/processed/processed_returns.csv")
 
 #ensure the date is a datetime type
-returns_df["date"] = pd.to_datetime(returns_df["date"]).dt.normalize()
+returns_df["date"] = pd.to_datetime(returns_df["date"], utc=True).dt.normalize()
 
 #just keep the timestamp and sentiment
 tweet_df = tweet_df[["timestamp", "fb_score"]].copy()
 
 #change to just keep date
-tweet_df["timestamp"] = pd.to_datetime(tweet_df["timestamp"])
-tweet_df["date"] = tweet_df["timestamp"].dt.normalize()
+tweet_df["date"] = pd.to_datetime(tweet_df["timestamp"], utc=True).dt.normalize()
 
 # helper: compute weighted daily score using positive/negative averages and counts
 # based on formula defined in dissertation document

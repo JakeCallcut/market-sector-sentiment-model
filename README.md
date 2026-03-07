@@ -8,6 +8,9 @@ This repository contains the code for an academic dissertation project investiga
 
 ## Project Details
 
+### Dataset Source
+https://huggingface.co/datasets/StephanAkkerman/stock-market-tweets-data
+
 ## Repository Structure
 
 ## Installation & Usage

@@ -15,7 +15,6 @@ EVAL_PATH = "../../data/results/rf_evaluation.csv"
 
 
 def get_random_forest(**kwargs):
-	"""Helper to get Random Forest model instance with sensible defaults."""
 	defaults = {
 		"n_estimators": 100,
 		"class_weight": "balanced",

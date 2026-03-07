@@ -2,7 +2,7 @@ import pandas as pd
 import re
 import finbert as fb
 
-IN_PATH = "../../data/raw/raw_tweets.csv"
+IN_PATH = "hf://datasets/StephanAkkerman/stock-market-tweets-data/stock-market-tweets-data.csv"
 OUT_PATH = "../../data/processed/clean_tweets.csv"
 
 #cleaning tweets of all undesired characters and strings
@@ -28,14 +28,14 @@ def clean_tweet(tweet: str):
     output = output.strip()
     return output
 
-#read the csv (skipping bad lines and using python engine to prevent exception on non-friendly char)
-df = pd.read_csv(IN_PATH, on_bad_lines="skip", engine="python", parse_dates=["post_date"])
+#read the csv from Hugging Face
+df = pd.read_csv(IN_PATH, parse_dates=["created_at"])
 
 #only take the date and text
-df = df[["post_date", "body"]].copy()
+df = df[["created_at", "text"]].copy()
 
 #rename to fit naming scheme
-df = df.rename(columns={"post_date": "timestamp", "body": "text"})
+df = df.rename(columns={"created_at": "timestamp"})
 
 #drop empty rows
 df = df.dropna().copy()
@@ -44,14 +44,14 @@ df = df.dropna().copy()
 df["text"] = df["text"].str.slice(0, 300)
 
 #take only rows in a window
-df = df[df["timestamp"].between("2019-01-01", "2019-06-31")]
+df = df[df["timestamp"].between("2020-04-09", "2020-07-16")]
 
 #Clean tweets
 df["text"] = df["text"].apply(clean_tweet)
 
 #score tweets
 print("Scoring tweets...")
-df["fb_score"] = df["text"].apply(fb.score_text)
+df["fb_score"] = fb.score_dataframe(df["text"])
 
 df.to_csv(OUT_PATH, index=False)
 print(df)
