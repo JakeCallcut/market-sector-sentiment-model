@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 START_DATE = "2020-04-09"
 END_DATE = "2020-07-16"
 PROCESSED_PATH = "../../data/processed/processed_returns.csv"
+VIX_PATH = "../../data/processed/vix.csv"
 DEBUG = True
 SAVE_TO_FILE = True
 
@@ -88,7 +89,32 @@ def label_returns():
 
     return labels
 
+#returns VIX values for date range (continuous, not labeled)
+def get_vix():
+    df = yf.download(
+        tickers="^VIX",
+        start=START_DATE,
+        end=END_DATE,
+        interval="1d",
+        auto_adjust=False,
+        progress=False,
+    )
+    
+    vix = df[["Adj Close"]].copy()
+    vix.columns = ["VIX"]
+    vix.index.name = "date"
+    
+    if DEBUG:
+        print(vix)
+    
+    if SAVE_TO_FILE:
+        vix.to_csv(VIX_PATH)
+        print("saved VIX")
+    
+    return vix
+
 #RUN FUNCTIONS
 get_adj_close()
 get_returns()
 label_returns()
+get_vix()

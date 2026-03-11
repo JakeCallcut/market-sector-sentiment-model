@@ -19,6 +19,7 @@ tweet_df["date"] = pd.to_datetime(tweet_df["timestamp"], utc=True).dt.normalize(
 
 # helper: compute weighted daily score using positive/negative averages and counts
 # based on formula defined in dissertation document
+# also returns tweet_volume (count of tweets per day)
 def compute_weighted_daily_score(tweet_df, tau=TAU_RETURN):
 
 	df = tweet_df.copy()
@@ -33,6 +34,7 @@ def compute_weighted_daily_score(tweet_df, tau=TAU_RETURN):
 		sbar_pos=("fb_score", lambda x: x[x > tau].mean()),
 		sbar_neg=("fb_score", lambda x: x[x < -tau].mean()),
 		mean_all=("fb_score", "mean"),
+		tweet_volume=("fb_score", "count"),  # count tweets per day
 	).reset_index()
 
 	# safe multiplication: replace NaN means with 0
@@ -42,14 +44,19 @@ def compute_weighted_daily_score(tweet_df, tau=TAU_RETURN):
 	# where denom == 0, fallback to arithmetic mean for that date
 	agg["mean_fb_score"] = np.where(denom > 0, numerator / denom, agg["mean_all"])
 
-	return agg[["date", "mean_fb_score"]]
+	return agg[["date", "mean_fb_score", "tweet_volume"]]
 
 
 # compute weighted daily mean using existing fb_score values (no rescoring)
 daily_mean = compute_weighted_daily_score(tweet_df, tau=TAU_RETURN)
 
-# join the two datasets on date
+# load VIX data
+vix_df = pd.read_csv("../../data/processed/vix.csv")
+vix_df["date"] = pd.to_datetime(vix_df["date"], utc=True).dt.normalize()
+
+# join the datasets on date (returns + sentiment + VIX)
 df = returns_df.merge(daily_mean, on="date", how="inner")
+df = df.merge(vix_df, on="date", how="inner")
 
 #write to csv
 df.to_csv("../../data/results/modelling_table.csv", index=False)

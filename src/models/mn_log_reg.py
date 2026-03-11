@@ -20,8 +20,9 @@ def get_logistic(**kwargs):
 def train_and_evaluate(df, ticker, n_splits=5):
 
 	df_local = df.copy()
-	# create lags
+	# create lags for all features
 	df_local = make_lags(df_local, "mean_fb_score", lags=(1, 2))
+	df_local = make_lags(df_local, "tweet_volume", lags=(1,))
 
 	#get only essential columns
 	required_cols = FEATURE_COLS + [ticker]
@@ -97,8 +98,8 @@ def main():
 	df = df[df["date"].notna()].copy()
 	df = df.sort_values("date").reset_index(drop=True)
 
-	# identify tickers (all columns except date and mean_fb_score)
-	ticker_cols = [c for c in df.columns if c not in ("date", "mean_fb_score")]
+	# identify tickers (all columns except features)
+	ticker_cols = [c for c in df.columns if c not in ("date", "mean_fb_score", "tweet_volume", "VIX")]
 
 	#run model for each ticker and store results
 	results = []

@@ -15,7 +15,7 @@ def run(script: Path):
 if __name__ == "__main__":
     # Data collection & processing
     run(SCRIPTS_DIR / "yfinance_utils.py")
-    run(SCRIPTS_DIR / "cleaning.py")
+    # run(SCRIPTS_DIR / "cleaning.py") 
     run(SCRIPTS_DIR / "preprocessing.py")
 
     # Model training
