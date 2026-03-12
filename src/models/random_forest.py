@@ -41,6 +41,7 @@ def train_and_evaluate(df, ticker, n_splits=5):
 	#split for cross-validation
 	tscv = TimeSeriesSplit(n_splits=n_splits)
 
+	train_accs = []
 	accs = []
 	f1s = []
 	y_true_all = []
@@ -54,6 +55,11 @@ def train_and_evaluate(df, ticker, n_splits=5):
 		pipeline = make_pipeline(StandardScaler(), get_random_forest())
 		pipeline.fit(X_train, y_train)
 
+		# compute train accuracy
+		y_pred_train = pipeline.predict(X_train)
+		train_acc = accuracy_score(y_train, y_pred_train)
+		train_accs.append(train_acc)
+
 		y_pred = pipeline.predict(X_test)
 
 		acc = accuracy_score(y_test, y_pred)
@@ -66,6 +72,7 @@ def train_and_evaluate(df, ticker, n_splits=5):
 		y_pred_all.extend(y_pred.tolist())
 
 	# aggregate metrics
+	train_accuracy_mean = float(np.mean(train_accs))
 	overall_acc = float(np.mean(accs))
 	overall_f1 = float(np.mean(f1s))
 	cm = confusion_matrix(y_true_all, y_pred_all, labels=[0, 1, 2])
@@ -77,6 +84,7 @@ def train_and_evaluate(df, ticker, n_splits=5):
 	#build result map storing accuracy, f1 and confusion matrix for plotting later
 	result = {
 		"ticker": ticker,
+		"train_accuracy_mean": train_accuracy_mean,
 		"accuracy_mean": overall_acc,
 		"f1_macro_mean": overall_f1,
 		"cm_00": int(cm[0, 0]),
