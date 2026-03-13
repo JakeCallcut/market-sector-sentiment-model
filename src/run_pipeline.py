@@ -13,7 +13,7 @@ def run(script: Path):
 
 
 if __name__ == "__main__":
-    # Data collection & processing
+    # Data collection & processing (scoring omitted for time benefit)
     run(SCRIPTS_DIR / "yfinance_utils.py")
     # run(SCRIPTS_DIR / "cleaning.py") 
     run(SCRIPTS_DIR / "preprocessing.py")
@@ -21,5 +21,6 @@ if __name__ == "__main__":
     # Model training
     run(MODELS_DIR / "mn_log_reg.py")
     run(MODELS_DIR / "random_forest.py")
+    run(MODELS_DIR / "gradient_boost.py")
 
     print("\n✓ Pipeline complete")
