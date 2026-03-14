@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pandas_market_calendars as mcal
 
 #config vars
 TAU_RETURN = 0.002  #0.2%
@@ -47,6 +48,35 @@ def compute_weighted_daily_score(tweet_df, tau=TAU_RETURN):
 	return agg[["date", "mean_fb_score", "tweet_volume"]]
 
 
+def validate_nyse_trading_dates(df, date_col="date"):
+
+	#fail if there are invalid dates
+	dates = pd.to_datetime(df[date_col], utc=True, errors="coerce").dt.normalize()
+	if dates.isna().any():
+		raise ValueError("Found invalid or missing dates in modelling table before market-date validation.")
+
+	#get date range
+	start = dates.min().strftime("%Y-%m-%d")
+	end = dates.max().strftime("%Y-%m-%d")
+
+	#get valid dates in range from pandas-market-calendars 
+	nyse = mcal.get_calendar("NYSE")
+	valid_days = nyse.valid_days(start_date=start, end_date=end)
+	valid_dates = pd.DatetimeIndex(valid_days.tz_convert("UTC").tz_localize(None)).normalize()
+
+	#get dates from modelling table
+	date_values = pd.DatetimeIndex(dates.dt.tz_localize(None)).normalize()
+	#get all of the invalid dates by finding the difference
+	invalid_dates = sorted(date_values.difference(valid_dates))
+
+	#fail if there are any
+	if invalid_dates:
+		invalid_str = ", ".join(d.strftime("%Y-%m-%d") for d in invalid_dates)
+		raise ValueError(
+			f"Found {len(invalid_dates)} non-NYSE market date(s) in modelling table: {invalid_str}"
+		)
+
+
 # compute weighted daily mean using existing fb_score values (no rescoring)
 daily_mean = compute_weighted_daily_score(tweet_df, tau=TAU_RETURN)
 
@@ -57,6 +87,9 @@ vix_df["date"] = pd.to_datetime(vix_df["date"], utc=True).dt.normalize()
 # join the datasets on date (returns + sentiment + VIX)
 df = returns_df.merge(daily_mean, on="date", how="inner")
 df = df.merge(vix_df, on="date", how="inner")
+
+# fail if any non-trading dates reach the final modelling table
+validate_nyse_trading_dates(df, date_col="date")
 
 #write to csv
 df.to_csv("../../data/results/modelling_table.csv", index=False)
