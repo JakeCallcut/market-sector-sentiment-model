@@ -37,29 +37,33 @@ def train_and_evaluate(df, ticker, n_splits=5):
 	X = df_local[FEATURE_COLS].values
 	y = df_local[ticker].map(LABEL_MAP).values
 
-	#split for cross-validation
-	tscv = TimeSeriesSplit(n_splits=n_splits)
-
 	train_accs = []
 	accs = []
 	f1s = []
 	y_true_all = []
 	y_pred_all = []
+	
+	#split for cross-validation
+	tscv = TimeSeriesSplit(n_splits=n_splits)
 
 	#perform cross validation
 	for fold, (train_idx, test_idx) in enumerate(tscv.split(X), 1):
+		#make train and test sets from indices
 		X_train, X_test = X[train_idx], X[test_idx]
 		y_train, y_test = y[train_idx], y[test_idx]
 
-		pipeline = make_pipeline(StandardScaler(), get_logistic(solver="lbfgs", class_weight="balanced", max_iter=1000))
+		#fit model pipeline onto train set
+		pipeline = make_pipeline(StandardScaler(), get_logistic())
 		pipeline.fit(X_train, y_train)
+
+		#test performance on test set
+		y_pred = pipeline.predict(X_test)
 
 		# compute train accuracy
 		y_pred_train = pipeline.predict(X_train)
 		train_acc = accuracy_score(y_train, y_pred_train)
 		train_accs.append(train_acc)
 
-		y_pred = pipeline.predict(X_test)
 
 		acc = accuracy_score(y_test, y_pred)
 		f1 = f1_score(y_test, y_pred, average="macro")
